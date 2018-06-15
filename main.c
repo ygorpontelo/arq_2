@@ -82,6 +82,15 @@ int main(int argc, char * const argv[]){
             funcionalidade9();
         break;
 
+        case 10:
+            strcpy(nomeArquivo, argv[2]);
+            if(strlen(nomeArquivo) > 0 && funcionalidade10(nomeArquivo)){
+                printf("Arquivo Carregado.\n");
+            }else{
+                printf("Falha no carregamento do arquivo.\n");
+            }
+        break;
+
         case 12:
             RRN = atoi(argv[2]);
             funcionalidade12(RRN);

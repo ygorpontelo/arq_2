@@ -8,6 +8,7 @@
 
 // Define nome da base de dados
 #define BASEDADOS "dados"
+#define INDICE "indice"
 
 int carregarArquivo(char *nome);
 void funcionalidade2();

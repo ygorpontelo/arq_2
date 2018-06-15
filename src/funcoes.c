@@ -587,6 +587,52 @@ void funcionalidade9() {
   fclose(f);
 }
 
+int organiza(){
+  
+}
+
+int insereIndice(){
+  
+}
+
+int funcionalidade10(char *nomeArq){
+  FILE *arquivo = fopen(nomeArq, "rb");
+  FILE *indice = fopen(INDICE, "wb+");
+
+  // Confere se conseguiu abrir os arquivos
+  if(arquivo == NULL || indice == NULL){
+      return 0;
+  }
+
+  int cod;
+  char leitura;
+
+  // Escreve cabeçalho
+  fputc('0', indice);                 // Escreve status
+  fwrite(0, 1, sizeof(int), indice);  // Escreve noRaiz
+  fwrite(0, 1, sizeof(int), indice);  // Escreve altura
+  fwrite(0, 1, sizeof(int), indice);  // Escreve ultimo RRN 
+
+  // Percorre todo arquivo 
+  while(fscanf(indice, "%d", &cod) > 0){
+    fwrite(cod, 1, sizeof(int), indice);  // Escreve cod
+    fwrite(RRN, 1, sizeof(int), indice);  // Escreve RRN   
+
+    // Pula ate o prox dado
+    leitura = fgetc(indice);
+    while(leitura != '\n'){
+      leitura = fgetc(indice);
+    }
+  }
+
+  return 1;
+}
+
+int funcionalidade11(){
+
+  return 0;  
+}
+
 void funcionalidade12(int chaveDeBusca) {
   char s;
   FILE *arvore = fopen(INDICE, "rb");
