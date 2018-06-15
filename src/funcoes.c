@@ -586,3 +586,20 @@ void funcionalidade9() {
   //Fechando o arquivo
   fclose(f);
 }
+
+void funcionalidade12(int chaveDeBusca) {
+  char s;
+  FILE *arvore = fopen(INDICE, "rb");
+
+  //checando o status do arquivo
+  fread(&s, 1, 1, f);
+  if (s == '0') {
+    printf("Falha no processamento do arquivo.\n");
+    return;
+  }
+
+  //algoritmo
+
+  //Fechando o arquivo
+  fclose(f);
+}
