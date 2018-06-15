@@ -82,6 +82,11 @@ int main(int argc, char * const argv[]){
             funcionalidade9();
         break;
 
+        case 12:
+            RRN = atoi(argv[2]);
+            funcionalidade12(RRN);
+        break;
+
         default:
             printf("Funcionalidade inexistente!\n");
         break;
