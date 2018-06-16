@@ -17,6 +17,7 @@ int main(int argc, char * const argv[]){
         return 0;
     }
 
+    //comentario
     char nomeArquivo[20];
     int funcionalidade = atoi(argv[1]), RRN;
 
