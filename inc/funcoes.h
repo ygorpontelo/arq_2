@@ -19,5 +19,6 @@ int funcionalidade6(int codEscola, char* dataI, char* dataF, char* nomeEscola, c
 int funcionalidade7(int RRN, int codEscola, char* dataI, char* dataF, char* nomeEscola, char* municipio, char* endereco);
 int funcionalidade8() ;
 void funcionalidade9();
+int funcionalidade13(int RRN);
 
 #endif
