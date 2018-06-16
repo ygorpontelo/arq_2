@@ -588,11 +588,11 @@ void funcionalidade9() {
 }
 
 int organiza(){
-  
+
 }
 
 int insereIndice(){
-  
+
 }
 
 int funcionalidade10(char *nomeArq){
@@ -611,12 +611,12 @@ int funcionalidade10(char *nomeArq){
   fputc('0', indice);                 // Escreve status
   fwrite(0, 1, sizeof(int), indice);  // Escreve noRaiz
   fwrite(0, 1, sizeof(int), indice);  // Escreve altura
-  fwrite(0, 1, sizeof(int), indice);  // Escreve ultimo RRN 
+  fwrite(0, 1, sizeof(int), indice);  // Escreve ultimo RRN
 
-  // Percorre todo arquivo 
+  // Percorre todo arquivo
   while(fscanf(indice, "%d", &cod) > 0){
     fwrite(cod, 1, sizeof(int), indice);  // Escreve cod
-    fwrite(RRN, 1, sizeof(int), indice);  // Escreve RRN   
+    fwrite(RRN, 1, sizeof(int), indice);  // Escreve RRN
 
     // Pula ate o prox dado
     leitura = fgetc(indice);
@@ -630,7 +630,7 @@ int funcionalidade10(char *nomeArq){
 
 int funcionalidade11(){
 
-  return 0;  
+  return 0;
 }
 
 void funcionalidade12(int chaveDeBusca) {
@@ -647,5 +647,68 @@ void funcionalidade12(int chaveDeBusca) {
   //algoritmo
 
   //Fechando o arquivo
+  fclose(f);
+}
+
+//Funcao que cria o bufferPool e retorna para o usuario
+int ** bufferCreate() {
+  char ** bufferPool;
+  char s;
+  int i;
+  FILE *f = fopen(INDICE, "rb");
+
+  //checando o status do arquivo
+  fread(&s, 1, 1, f);
+  if (s == '0') {
+    printf("Falha no processamento do arquivo.\n");
+    return NULL;
+  }
+
+  //alocando memoria do bufferPool
+  bufferPool = malloc(sizeof(int*)*5);
+  for (i=0; i<5; i++) {
+    //Cada posicao da matriz armazena 124 bytes, 116 bytes do nó, 4 bytes do RRN do nó e 4 bytes para o contador para a política do bufferPool (LFU)
+    bufferPool[i] = malloc(sizeof(int) * 31);
+  }
+
+  fread(&i, 4, 1, f); //lendo a raiz
+  fseek(f, 13 + i*116, SEEK_SET);
+  fread(bufferPool[5], 4, 29, f);
+
+  bufferPool[5][29] = i;
+  bufferPool[5][30] = 2147483647;  //2 147 483 647 = int_max
+
+  fclose(f);
+  return bufferPool;
+}
+
+void bufferClose(int ** bufferPool) {
+  char s;
+  int i;
+  FILE *f = fopen(INDICE, "wb");
+
+  //checando o status do arquivo
+  fread(&s, 1, 1, f);
+  if (s == '0') {
+    printf("Falha no processamento do arquivo.\n");
+    return NULL;
+  }
+
+  //Mudando status do arquivo para 0
+  s = '0';
+  fseek(f, 0, SEEK_SET);
+  fwrite(&s, 1, 1, f);
+
+  //Laco para escrever cada no do bufferPool
+  for (i=0; i<5; i++) {
+    fseek(f, 13 + bufferPool[i][29]*116, SEEK_SET);
+    fwrite(bufferPool[i], 4, 29, f);
+  }
+
+  //Voltando status do arquivo para 1
+  s = '1';
+  fseek(f, 0, SEEK_SET);
+  fwrite(&s, 1, 1, f);
+
   fclose(f);
 }

@@ -17,9 +17,13 @@ int main(int argc, char * const argv[]){
         return 0;
     }
 
-    //comentario
     char nomeArquivo[20];
     int funcionalidade = atoi(argv[1]), RRN;
+    int ** bufferPool = bufferCreate();
+
+    if (bufferPool == NULL) {
+      return 0;
+    }
 
     switch(funcionalidade){
         case 1:
@@ -101,10 +105,12 @@ int main(int argc, char * const argv[]){
             RRN = atoi(argv[2]);
             funcionalidade13(RRN);
         break;
+        
         default:
             printf("Funcionalidade inexistente!\n");
         break;
     }
 
+    bufferClose(bufferPool);
     return 0;
 }

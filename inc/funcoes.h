@@ -20,5 +20,8 @@ int funcionalidade7(int RRN, int codEscola, char* dataI, char* dataF, char* nome
 int funcionalidade8() ;
 void funcionalidade9();
 int funcionalidade13(int RRN);
+void funcionalidade12(int chaveDeBusca);
+int ** bufferCreate();
+void bufferClose(int ** bufferPool);
 
 #endif
