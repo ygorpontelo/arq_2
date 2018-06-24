@@ -587,75 +587,188 @@ void funcionalidade9() {
   fclose(f);
 }
 
-int organiza(){
-
-}
-
-int insereIndice(){
-
-}
-
-int funcionalidade10(char *nomeArq){
-  FILE *arquivo = fopen(nomeArq, "rb");
+/*
+  Funcao que cria o indice com cabeçalho vazio
+*/
+void criaCabecalho(){
   FILE *indice = fopen(INDICE, "wb+");
 
+  int num = -1;
+  // Escreve cabeçalho
+  fputc('0', indice);                   // Escreve status
+  fwrite(&num, sizeof(int), 1, indice);   // Escreve noRaiz
+  num = 0;
+  fwrite(&num, sizeof(int), 1, indice);    // Escreve altura
+  fwrite(&num, sizeof(int), 1, indice);   // Escreve ultimo RRN
+  fseek(indice, 0, SEEK_SET);
+  fputc('1', indice);
+  fclose(indice);
+}
+
+/*
+  Funcao para criar arq de dados e indice 
+*/
+int funcionalidade10(char *nomeArq, int ***buffer){
+  carregarArquivo(nomeArq);
+
+  FILE *arquivo = fopen(nomeArq, "rb");
+
   // Confere se conseguiu abrir os arquivos
-  if(arquivo == NULL || indice == NULL){
+  if(arquivo == NULL){
       return 0;
   }
 
-  int cod;
-  char leitura;
+  int cod, rrn = 0;
 
-  // Escreve cabeçalho
-  fputc('0', indice);                 // Escreve status
-  fwrite(0, 1, sizeof(int), indice);  // Escreve noRaiz
-  fwrite(0, 1, sizeof(int), indice);  // Escreve altura
-  fwrite(0, 1, sizeof(int), indice);  // Escreve ultimo RRN
-
-  // Percorre todo arquivo
-  while(fscanf(indice, "%d", &cod) > 0){
-    fwrite(cod, 1, sizeof(int), indice);  // Escreve cod
-    fwrite(RRN, 1, sizeof(int), indice);  // Escreve RRN
-
-    // Pula ate o prox dado
-    leitura = fgetc(indice);
-    while(leitura != '\n'){
-      leitura = fgetc(indice);
-    }
+  // Percorre todo arquivo 
+  while(fscanf(arquivo, "%d", &cod) > 0){
+    funcionalidade11(cod, rrn, -1, -1, 1, buffer);
+    rrn++;
   }
 
   return 1;
 }
 
-int funcionalidade11(){
+/*
+  Funcao pra colocar um valor na arvore        
+*/
+int funcionalidade11(int cod, int RRN, int RRNPag, int ***buffer){
+  int *pagina, *pagNova, *pagNova2, vetor; 
 
-  return 0;
+  // Se o RRN for da raiz
+  if(RRNPag == -1){
+    pagina = carregaRaiz(buffer);
+  }else{
+    pagina = carregaPagina(RRNPag, buffer);
+  }
+
+  // Acha posicao pra colocar no vetor  
+  int i = 2, j, k;
+  
+  if(pagina[0] > 0){
+    while(cod >= pagina[i] && i < 29){
+      i+=3;  
+    }
+  }  
+  
+  printf("JEBA 1\n");
+  // Se o vetor tiver cheio                
+  if(pagina[0] > 8){
+    printf("JEBA 2\n");
+    // Se a chave for menor que a metade
+    if(i <= 15){
+      printf("JEBA 3\n");
+      // Pagina divide na metade
+      pagNova = novaPagina(buffer);
+      pagNova[0] = 5;
+      for(j = 1, k = 1; j < 16; j++, k++){
+        if(j == i){
+          pagNova[j] = cod;
+          pagNova[j+1] = RRN;
+          k-=2;
+          j++;                    
+        }else{
+          pagNova[j] = pagina[k];
+        }
+      }
+      
+      // Cria a nova pagina
+      pagNova2 = novaPagina(buffer);
+      pagNova2[0] = 4; 
+      for(i = 1; i < 11; i++){
+        pagNova2[i] = pagina[i+18];
+      }
+
+      // Promove o sexto maior cod
+      pagina[0] = 1;
+      pagina[1] = pagina[16];
+      pagina[2] = pagina[17];
+      pagina[3] = pagina[18];
+
+      atualizaPagina(pagina, buffer);
+      atualizaPagina(pagNova, buffer);          
+      atualizaPagina(pagNova2, buffer);
+    }else{
+      printf("JEBA 4\n");
+      // Pagina divide na metade
+      pagNova = novaPagina(buffer);
+      pagNova[0] = 5;
+      for(j = 1; j < 16; j++){
+        pagNova[j] = pagina[j];
+      }
+      
+      // Cria a nova pagina
+      pagNova2 = novaPagina(buffer);
+      pagNova2[0] = 4; 
+      for(j = 1, k = 1; j < 11; j++, k++){
+        if(i == j){
+          pagNova2[j] = cod;
+          pagNova2[j+1] = RRN;
+          k-=2;
+          j++;
+        }else{
+          pagNova2[j] = pagina[k+18];
+        }
+      }
+
+      // Promove o sexto maior cod
+      pagina[0] = 1;
+      pagina[1] = pagina[16];
+      pagina[2] = pagina[17];
+      pagina[3] = pagina[18];
+
+      atualizaPagina(pagina, buffer);          
+      atualizaPagina(pagNova, buffer);
+      atualizaPagina(pagNova2, buffer);
+    }
+  }else{
+    printf("JEBA 5\n");
+    if(pagina[i+2] != -1){
+      funcionalidade11(cod, RRN, pagina[i+2], buffer);
+    }else{
+      // Coloca os valores corretos no vetor aux
+      for(j = 1, k = 1; j < 29; j++, k++){
+        if(i == j){
+          vetor[j] = cod;
+          vetor[j+1] = RRN;
+          k-=2;   
+          j++;     
+        }else{
+          vetor[j] = pagina[k];        
+        }      
+      }
+      // vetor original fica igual a vetor aux    
+      for(j = 0; j < 29; j++){
+        pagina[j] = vetor[j];
+      }
+      // Atualiza a pagina que foi modificada
+      atualizaPagina(pagina, buffer);
+    }
+  }
+  printf("JEBA 6\n");
+
+  return 1;
 }
 
 void funcionalidade12(int chaveDeBusca) {
-  char s;
-  FILE *arvore = fopen(INDICE, "rb");
 
-  //checando o status do arquivo
-  fread(&s, 1, 1, f);
-  if (s == '0') {
-    printf("Falha no processamento do arquivo.\n");
-    return;
-  }
-
-  //algoritmo
-
-  //Fechando o arquivo
-  fclose(f);
 }
 
-//Funcao que cria o bufferPool e retorna para o usuario
+/*
+Funcao que cria o bufferPool e retorna para o usuario
+Cria a raiz caso ela ainda nao exista
+*/
 int ** bufferCreate() {
-  char ** bufferPool;
+  int ** bufferPool;
   char s;
   int i;
-  FILE *f = fopen(INDICE, "rb");
+  int *raiz;
+  FILE *f = fopen(INDICE, "wb");
+
+  if (f == NULL) {
+    criaCabecalho();
+    f = fopen(INDICE, "wb");
+  }
 
   //checando o status do arquivo
   fread(&s, 1, 1, f);
@@ -665,50 +778,248 @@ int ** bufferCreate() {
   }
 
   //alocando memoria do bufferPool
-  bufferPool = malloc(sizeof(int*)*5);
-  for (i=0; i<5; i++) {
-    //Cada posicao da matriz armazena 124 bytes, 116 bytes do nó, 4 bytes do RRN do nó e 4 bytes para o contador para a política do bufferPool (LFU)
-    bufferPool[i] = malloc(sizeof(int) * 31);
+  bufferPool = (int **) malloc(sizeof(int*)*6);
+  for (i=0; i<6; i++) {
+    //Cada posicao da matriz armazena 124 bytes (31 posicoes de inteiros):
+    //116 bytes do nó,
+    //4 bytes do RRN do nó e
+    //4 bytes para o contador para a política do bufferPool (LFU)
+    bufferPool[i] = (int *) malloc(sizeof(int) * 31);
+    bufferPool[i][bufferRRN] = -1;
   }
 
-  fread(&i, 4, 1, f); //lendo a raiz
-  fseek(f, 13 + i*116, SEEK_SET);
-  fread(bufferPool[5], 4, 29, f);
+  //zerando pageFault e pageHit do buffer
+  bufferPool[5][0] = 0;
+  bufferPool[5][1] = 0;
 
-  bufferPool[5][29] = i;
-  bufferPool[5][30] = 2147483647;  //2 147 483 647 = int_max
+  fread(&i, 4, 1, f); //lendo o RRN da raiz
+  if (i != -1) {
+    raiz = malloc(sizeof(int)*30);
+    fseek(f, 13 + i*116, SEEK_SET);
+    fread(raiz, 4, 29, f); //lendo a raiz
+
+    raiz[bufferRRN] = i; //guardando RRN da raiz
+  } else {
+    //cria nova raiz
+    raiz = novaPagina(&bufferPool);
+
+    //atualiza RRN da raiz no cabecalho
+    fseek(f, 1, SEEK_SET);
+    fwrite(&(raiz[bufferRRN]), 4, 1, f); 
+  }
 
   fclose(f);
+
+  //colocando raiz no buffer (a raiz fica na linha 4 do bufferPool)
+  for (i=0; i<30; i++) {
+    bufferPool[4][i] = raiz[i];
+  }
+  bufferPool[4][frequencia] = 2147483647;  //2.147.483.647 = int_max
+
+  free(raiz);
   return bufferPool;
 }
 
-void bufferClose(int ** bufferPool) {
+void bufferClose(int ***bufferPool) {
   char s;
   int i;
   FILE *f = fopen(INDICE, "wb");
 
-  //checando o status do arquivo
-  fread(&s, 1, 1, f);
-  if (s == '0') {
-    printf("Falha no processamento do arquivo.\n");
-    return NULL;
-  }
-
-  //Mudando status do arquivo para 0
-  s = '0';
-  fseek(f, 0, SEEK_SET);
-  fwrite(&s, 1, 1, f);
+  printf("olca %d\n", (*bufferPool)[0][bufferRRN]);
 
   //Laco para escrever cada no do bufferPool
   for (i=0; i<5; i++) {
-    fseek(f, 13 + bufferPool[i][29]*116, SEEK_SET);
-    fwrite(bufferPool[i], 4, 29, f);
+    printf("JEBA1\n");
+    fseek(f, 13 + ((*bufferPool)[i][bufferRRN]) * 116, SEEK_SET);
+    printf("JEBA2\n");
+    fwrite((*bufferPool)[i], 4, 29, f);
   }
 
   //Voltando status do arquivo para 1
   s = '1';
   fseek(f, 0, SEEK_SET);
   fwrite(&s, 1, 1, f);
+  fclose(f);
+
+  //Anotando numero de PageFaults e PageHits
+  f = fopen("buffer-info.text", "a");
+  fprintf(f, "Page fault: %d; Page hit: %d.\n", pageFaults, pageHits);
+  fclose(f);
+
+
+  //liberando memoria do bufferPool
+  for (i=0; i<6; i++) {
+    free((*bufferPool)[i]);
+  }
+  free(*bufferPool);
+}
+
+/*
+Funcao que busca um RRN no bufferPool
+Retorna um vetor de inteiros (a linha da matriz) caso esteja no buffer
+Retorna NULL caso nao esteja no buffer
+*/
+int * bufferGet(int RRN, int ***bufferPool) {
+  int i;
+  for (i=0; i<4; i++) {
+    if ((*bufferPool)[i][29] == RRN) {
+      pageHits++;
+      (*bufferPool)[i][frequencia]++;  //aumenta taxa de uso da pagina buscada
+      return (*bufferPool)[i];
+    }
+  }
+
+  pageFaults++;
+  return NULL;
+}
+
+//Funcao que retorna para o usuario a raiz da arvore em um vetor de inteiros
+int * carregaRaiz(int ***bufferPool) {
+  int i;
+
+  int * raiz = malloc(sizeof(int)*30);
+  for (i=0; i<29; i++) {
+    raiz[i] = (*bufferPool)[4][i];
+  }
+
+  return raiz;
+}
+
+
+//Funcao que escreve a pagina enviada pelo usuario no arquivo
+void escrevePagina(int *pagina) {
+  FILE *f = fopen(INDICE, "wb");
+
+  //vai ate o RRN da pagina e escreve
+  fseek(f, 13 + pagina[bufferRRN]*116, SEEK_SET);
+  fwrite(pagina, 4, 29, f);
 
   fclose(f);
+}
+
+/*
+Funcao que aplica a politica LFU no buffer
+Substitui a linha menos frequentemente utilizada do bufferPool pela novaPagina
+*/
+void bufferLFU(int *novaPagina, int ***bufferPool) {
+  int i, j;
+  int LFU = 0;
+  for (i=0; i<4; i++) { //itera sobre todos os membros do bufferPool (exceto a raiz)
+
+    //caso o espaco esteja vazio
+    if ((*bufferPool)[i][bufferRRN] == -1) {
+      for (j=0; j<30; j++) {
+        (*bufferPool)[i][j] = novaPagina[j];
+      }
+      (*bufferPool)[i][frequencia] = 1;
+      return;
+    }
+
+    //encontrando o menos frequentemente utilizado
+    if ((*bufferPool)[LFU][frequencia] > (*bufferPool)[i][frequencia]) {
+      LFU = i;
+    }
+  }
+
+  escrevePagina((*bufferPool)[LFU]);
+
+  for (i=0; i<30; i++) {
+    (*bufferPool)[LFU][i] = novaPagina[i];
+  }
+  (*bufferPool)[LFU][frequencia] = 1;
+}
+
+/*
+Funcao que retorna, em um vetor de inteiros, o no da arvore que possui o RRN passado pelo usuario
+Aplica a politica de substituicao LFU (Last Frequently Used) para decidir qual RRN do bufferPool sera substituido
+(Caso o no ja nao esteja no bufferpool)
+*/
+int* carregaPagina(int RRN, int ***bufferPool) {
+  int i;
+  int *pag = malloc(sizeof(int)*30);
+
+  //ve se pagina esta no buffer
+  int * linha = bufferGet(RRN, bufferPool);
+  if (linha != NULL) {
+    for (i=0; i<30; i++) {
+      pag[i] = linha[i];
+    }
+
+    return pag;
+  }
+
+  //pagina nao esta no buffer, portanto deve-se abrir o arquivo
+  FILE *f = fopen(INDICE, "rb");
+
+  //buscando pagina no arquivo e guardando em "pag"
+  fseek(f, 13 + RRN*116, SEEK_SET);
+  fread(pag, 4, 29, f);
+  pag[bufferRRN] = RRN;
+
+  fclose(f);
+
+  bufferLFU(pag, bufferPool); //politica de substituicao
+
+  return pag;
+}
+
+/*
+Funcao que escreve a pagina enviada pelo usuario no bufferPool, caso esteja no buffer
+ou no arquivo, caso nao esteja no buffer
+*/
+void atualizaPagina(int *pag, int ***bufferPool) {
+  int i;
+
+  int * linha = bufferGet(pag[bufferRRN], bufferPool);
+  if (linha != NULL) {  //caso a pagina ja esteja no buffer
+    for (i=0; i<30; i++) {
+      linha[i] = pag[i];
+    }
+
+    free(pag);
+    return;
+  }
+
+  //Pag nao esta no buffer, portanto deve-se aplicar o LFU
+  bufferLFU(pag, bufferPool);
+  free(pag);
+}
+
+/*
+Funcao que cria uma nova pagina com o ultimo RRN
+Retorna a pagina como vetor para o usuario
+Coloca a pagina no buffer pool caso ela nao seja a raiz sendo criada
+*/
+int* novaPagina(int ***bufferPool) {
+  int i;
+  int ultimoRRN;
+  
+  FILE *f = fopen(INDICE, "wb");
+
+  fseek(f, 9, SEEK_SET);
+  fread(&ultimoRRN, 4, 1, f);
+
+  //cria a nova pagina vazia
+  int * pag = malloc(sizeof(int)*30);
+  pag[0] = 0;
+  for (i=1; i<29; i++) {
+    pag[i] = -1;
+  }
+  pag[bufferRRN] = ultimoRRN;
+
+  if (ultimoRRN != 0) {  
+    /*caso nao esteja criando a primeira pagina de todas (a primeira raiz), 
+    pois ela deve ser colocada em uma posicao especial, nao submetida ao LFU*/
+    bufferLFU(pag, bufferPool); //coloca a nova pagina no buffer pool
+  }
+
+  escrevePagina(pag);
+
+  //atualiza o ultimo RRN
+  ultimoRRN++;
+  fseek(f, 9, SEEK_SET);
+  fwrite(&ultimoRRN, 4, 1, f);
+
+  fclose(f);
+  return pag;
 }
