@@ -606,7 +606,7 @@ void criaCabecalho(){
 }
 
 /*
-  Funcao para criar arq de dados e indice 
+  Funcao para criar arq de dados e indice
 */
 int funcionalidade10(char *nomeArq, int ***buffer){
   carregarArquivo(nomeArq);
@@ -620,7 +620,7 @@ int funcionalidade10(char *nomeArq, int ***buffer){
 
   int cod, rrn = 0;
 
-  // Percorre todo arquivo 
+  // Percorre todo arquivo
   while(fscanf(arquivo, "%d", &cod) > 0){
     funcionalidade11(cod, rrn, -1, -1, 1, buffer);
     rrn++;
@@ -630,10 +630,10 @@ int funcionalidade10(char *nomeArq, int ***buffer){
 }
 
 /*
-  Funcao pra colocar um valor na arvore        
+  Funcao pra colocar um valor na arvore
 */
 int funcionalidade11(int cod, int RRN, int RRNPag, int ***buffer){
-  int *pagina, *pagNova, *pagNova2, vetor; 
+  int *pagina, *pagNova, *pagNova2, vetor;
 
   // Se o RRN for da raiz
   if(RRNPag == -1){
@@ -642,17 +642,17 @@ int funcionalidade11(int cod, int RRN, int RRNPag, int ***buffer){
     pagina = carregaPagina(RRNPag, buffer);
   }
 
-  // Acha posicao pra colocar no vetor  
+  // Acha posicao pra colocar no vetor
   int i = 2, j, k;
-  
+
   if(pagina[0] > 0){
     while(cod >= pagina[i] && i < 29){
-      i+=3;  
+      i+=3;
     }
-  }  
-  
+  }
+
   printf("JEBA 1\n");
-  // Se o vetor tiver cheio                
+  // Se o vetor tiver cheio
   if(pagina[0] > 8){
     printf("JEBA 2\n");
     // Se a chave for menor que a metade
@@ -666,15 +666,15 @@ int funcionalidade11(int cod, int RRN, int RRNPag, int ***buffer){
           pagNova[j] = cod;
           pagNova[j+1] = RRN;
           k-=2;
-          j++;                    
+          j++;
         }else{
           pagNova[j] = pagina[k];
         }
       }
-      
+
       // Cria a nova pagina
       pagNova2 = novaPagina(buffer);
-      pagNova2[0] = 4; 
+      pagNova2[0] = 4;
       for(i = 1; i < 11; i++){
         pagNova2[i] = pagina[i+18];
       }
@@ -686,7 +686,7 @@ int funcionalidade11(int cod, int RRN, int RRNPag, int ***buffer){
       pagina[3] = pagina[18];
 
       atualizaPagina(pagina, buffer);
-      atualizaPagina(pagNova, buffer);          
+      atualizaPagina(pagNova, buffer);
       atualizaPagina(pagNova2, buffer);
     }else{
       printf("JEBA 4\n");
@@ -696,10 +696,10 @@ int funcionalidade11(int cod, int RRN, int RRNPag, int ***buffer){
       for(j = 1; j < 16; j++){
         pagNova[j] = pagina[j];
       }
-      
+
       // Cria a nova pagina
       pagNova2 = novaPagina(buffer);
-      pagNova2[0] = 4; 
+      pagNova2[0] = 4;
       for(j = 1, k = 1; j < 11; j++, k++){
         if(i == j){
           pagNova2[j] = cod;
@@ -717,7 +717,7 @@ int funcionalidade11(int cod, int RRN, int RRNPag, int ***buffer){
       pagina[2] = pagina[17];
       pagina[3] = pagina[18];
 
-      atualizaPagina(pagina, buffer);          
+      atualizaPagina(pagina, buffer);
       atualizaPagina(pagNova, buffer);
       atualizaPagina(pagNova2, buffer);
     }
@@ -731,13 +731,13 @@ int funcionalidade11(int cod, int RRN, int RRNPag, int ***buffer){
         if(i == j){
           vetor[j] = cod;
           vetor[j+1] = RRN;
-          k-=2;   
-          j++;     
+          k-=2;
+          j++;
         }else{
-          vetor[j] = pagina[k];        
-        }      
+          vetor[j] = pagina[k];
+        }
       }
-      // vetor original fica igual a vetor aux    
+      // vetor original fica igual a vetor aux
       for(j = 0; j < 29; j++){
         pagina[j] = vetor[j];
       }
@@ -750,8 +750,23 @@ int funcionalidade11(int cod, int RRN, int RRNPag, int ***buffer){
   return 1;
 }
 
-void funcionalidade12(int chaveDeBusca) {
-
+void funcionalidade12(int chaveDeBusca, int*** pool) {
+  int *current = carregaRaiz(pool);
+  for (int i = 2; i < 29;) { // Comeca do 2 porque a posicao 0 contem o numero de elementos no noh e a posicao
+                                // 1 contem o primeiro ponteiro
+    if(i >= (current[0]*3 + 2) || chaveDeBusca < current[i]){ //Se a chave atual for menor que a posicao atual ou
+      current = carregaPagina(current[i-1], pool); // essa posicao nao existir (aka final)
+      i = 2; // entao va ao RRN entre esse e o valido
+    }else if(chaveDeBusca > current[i]) {
+      i += 3;
+    }else if(chaveDeBusca == current[i]){
+      funcionalidade4(current[i+1]);
+      i = 29;
+    }else{
+      printf("Registro inexistente.\n");
+      i = 29;
+    }
+  }
 }
 
 /*
@@ -805,7 +820,7 @@ int ** bufferCreate() {
 
     //atualiza RRN da raiz no cabecalho
     fseek(f, 1, SEEK_SET);
-    fwrite(&(raiz[bufferRRN]), 4, 1, f); 
+    fwrite(&(raiz[bufferRRN]), 4, 1, f);
   }
 
   fclose(f);
@@ -993,7 +1008,7 @@ Coloca a pagina no buffer pool caso ela nao seja a raiz sendo criada
 int* novaPagina(int ***bufferPool) {
   int i;
   int ultimoRRN;
-  
+
   FILE *f = fopen(INDICE, "wb");
 
   fseek(f, 9, SEEK_SET);
@@ -1007,8 +1022,8 @@ int* novaPagina(int ***bufferPool) {
   }
   pag[bufferRRN] = ultimoRRN;
 
-  if (ultimoRRN != 0) {  
-    /*caso nao esteja criando a primeira pagina de todas (a primeira raiz), 
+  if (ultimoRRN != 0) {
+    /*caso nao esteja criando a primeira pagina de todas (a primeira raiz),
     pois ela deve ser colocada em uma posicao especial, nao submetida ao LFU*/
     bufferLFU(pag, bufferPool); //coloca a nova pagina no buffer pool
   }

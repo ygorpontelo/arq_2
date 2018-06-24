@@ -27,7 +27,7 @@ int funcionalidade8() ;
 void funcionalidade9();
 int funcionalidade10(char *nomeArq, int ***buffer);
 int funcionalidade11(int cod, int RRN, int RRNPag, int pagAnterior, int podeDescer, int ***buffer);
-void funcionalidade12(int chaveDeBusca);
+void funcionalidade12(int chaveDeBusca, int*** pool);
 //int funcionalidade13(int RRN);
 
 int ** bufferCreate();
